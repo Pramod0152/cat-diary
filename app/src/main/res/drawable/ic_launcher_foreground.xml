@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simplified cat paw icon -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M54,30 C54,30 40,22 34,30 C28,38 30,48 34,50 C38,52 42,48 42,48 L42,56 C42,58 44,60 46,60 L62,60 C64,60 66,58 66,56 L66,48 C66,48 70,52 74,50 C78,48 80,38 74,30 C68,22 54,30 54,30 Z
+        M34,50 C30,52 24,52 24,56 C24,60 28,64 28,64 C28,64 32,62 34,58 Z
+        M74,50 C78,52 84,52 84,56 C84,60 80,64 80,64 C80,64 76,62 74,58 Z" />
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M44,68 L40,78 M46,68 L46,80 M52,68 L52,82 M58,68 L58,82 M64,68 L64,80 M68,68 L72,78"
+        android:strokeWidth="3"
+        android:strokeColor="#6750A4" />
+</vector>
