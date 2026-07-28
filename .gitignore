@@ -121,6 +121,12 @@
 **/tmp/
 **/temp/
 
+# Android
+local.properties
+*.iml
+.gradle/
+build/
+
 # Dart
 **/.dart_tool/
 **/*.dart_tool

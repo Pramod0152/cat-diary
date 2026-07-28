@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,7 +52,7 @@ fun ProfileScreen(
     catProfile: CatProfile?,
     onSaved: () -> Unit
 ) {
-    val saveState = viewModel.profileSaveState
+    val saveState by viewModel.profileSaveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var name by remember { mutableStateOf(catProfile?.name ?: "") }
@@ -70,15 +71,15 @@ fun ProfileScreen(
         }
     }
 
-    LaunchedEffect(saveState.value) {
-        when (val state = saveState.value) {
+    LaunchedEffect(saveState) {
+        when (saveState) {
             is ProfileSaveState.Saved -> {
                 snackbarHostState.showSnackbar("Profile saved")
                 viewModel.resetSaveState()
                 onSaved()
             }
             is ProfileSaveState.Error -> {
-                snackbarHostState.showSnackbar("Error: ${state.message}")
+                snackbarHostState.showSnackbar("Error: ${saveState.message}")
                 viewModel.resetSaveState()
             }
             else -> {}
@@ -179,10 +180,10 @@ fun ProfileScreen(
                     )
                     viewModel.createOrUpdateProfile(profile)
                 },
-                enabled = saveState.value !is ProfileSaveState.Saving,
+                enabled = saveState !is ProfileSaveState.Saving,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (saveState.value is ProfileSaveState.Saving) {
+                if (saveState is ProfileSaveState.Saving) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp
