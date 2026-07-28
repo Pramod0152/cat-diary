@@ -5,10 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.purrcare.PurrCareApplication
 import com.purrcare.data.entity.CatProfile
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -21,7 +24,15 @@ class CatProfileViewModel(application: Application) : AndroidViewModel(applicati
 
     private val _selectedCatId = MutableStateFlow<Long?>(null)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val selectedCat: StateFlow<CatProfile?> = _selectedCatId
+        .flatMapLatest { id ->
+            if (id == null) {
+                flowOf(null)
+            } else {
+                catDao.getCatById(id)
+            }
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _profileSaveState = MutableStateFlow<ProfileSaveState>(ProfileSaveState.Idle)

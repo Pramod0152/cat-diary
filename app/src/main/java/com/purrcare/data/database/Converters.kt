@@ -17,10 +17,4 @@ class Converters {
 
     @TypeConverter
     fun toLitterUrination(value: String): LitterUrination = LitterUrination.valueOf(value)
-
-    @TypeConverter
-    fun fromTimestamp(value: Long): Long = value
-
-    @TypeConverter
-    fun toTimestamp(value: Long): Long = value
 }

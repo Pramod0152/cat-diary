@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.purrcare.data.entity.enums.LitterUrination
 import com.purrcare.data.entity.enums.WaterIntake
@@ -151,7 +152,7 @@ fun DailyLogScreen(
                 onValueChange = { viewModel.updateWeight(it) },
                 label = { Text("Weight (kg)") },
                 singleLine = true,
-                keyboardOptions = KeyboardType(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
             )
 

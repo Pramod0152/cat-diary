@@ -2,9 +2,11 @@ package com.purrcare.data.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Update
 import com.purrcare.data.entity.Medication
@@ -12,7 +14,11 @@ import com.purrcare.data.entity.MedicationLog
 import kotlinx.coroutines.flow.Flow
 
 data class MedicationWithLogs(
-    val medication: Medication,
+    @Embedded val medication: Medication,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "medication_id"
+    )
     val logs: List<MedicationLog>
 )
 

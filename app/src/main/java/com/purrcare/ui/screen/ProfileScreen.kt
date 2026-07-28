@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +44,7 @@ import com.purrcare.data.entity.CatProfile
 import com.purrcare.ui.viewmodel.CatProfileViewModel
 import com.purrcare.ui.viewmodel.ProfileSaveState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: CatProfileViewModel,
@@ -136,7 +139,7 @@ fun ProfileScreen(
                 onValueChange = { birthYear = it.toIntOrNull() ?: 0 },
                 label = { Text("Birth Year") },
                 singleLine = true,
-                keyboardOptions = KeyboardType(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -147,7 +150,7 @@ fun ProfileScreen(
                 onValueChange = { targetWeight = it.toFloatOrNull() ?: 0f },
                 label = { Text("Target Weight (kg)") },
                 singleLine = true,
-                keyboardOptions = KeyboardType(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
             )
 
