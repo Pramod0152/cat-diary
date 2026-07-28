@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:name=".PurrCareApplication"
+        android:name=".PetWellApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="PurrCare"
+        android:label="PetWell"
         android:supportsRtl="true"
         android:theme="@style/Theme.PurrCare">
 
@@ -25,7 +25,7 @@
         </activity>
 
         <receiver
-            android:name=".notification.MedicationAlarmReceiver"
+            android:name=".notification.PetReminderAlarmReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

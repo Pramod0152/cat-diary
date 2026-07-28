@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.purrcare"
+    namespace = "com.petwell"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.purrcare"
+        applicationId = "com.petwell"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
