@@ -12,7 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.purrcare.ui.screen.DailyLogScreen
+import com.purrcare.ui.screen.ExportReportDialog
 import com.purrcare.ui.screen.HomeScreen
 import com.purrcare.ui.screen.MedicationScreen
 import com.purrcare.ui.screen.ProfileScreen
@@ -27,6 +32,7 @@ import com.purrcare.ui.viewmodel.CatProfileViewModel
 import com.purrcare.ui.viewmodel.DailyLogViewModel
 import com.purrcare.ui.viewmodel.HomeViewModel
 import com.purrcare.ui.viewmodel.MedicationViewModel
+import com.purrcare.ui.viewmodel.ReportViewModel
 
 @Composable
 fun PurrCareNavHost(
@@ -34,6 +40,7 @@ fun PurrCareNavHost(
     dailyLogViewModel: DailyLogViewModel,
     medicationViewModel: MedicationViewModel,
     homeViewModel: HomeViewModel,
+    reportViewModel: ReportViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -41,6 +48,20 @@ fun PurrCareNavHost(
 
     val selectedCat by catProfileViewModel.selectedCat.collectAsStateWithLifecycle()
     val recentLogs by homeViewModel.recentLogs.collectAsState()
+    val context = LocalContext.current
+
+    var showExportDialog by remember { mutableStateOf(false) }
+
+    if (showExportDialog && selectedCat != null) {
+        ExportReportDialog(
+            catProfile = selectedCat!!,
+            viewModel = reportViewModel,
+            onDismiss = { showExportDialog = false },
+            onShare = { intent ->
+                context.startActivity(android.content.Intent.createChooser(intent, "Share Report"))
+            }
+        )
+    }
 
     Scaffold(
         bottomBar = {
@@ -93,7 +114,8 @@ fun PurrCareNavHost(
                         navController.navigate(Screen.Profile.route) {
                             launchSingleTop = true
                         }
-                    }
+                    },
+                    onExportReport = { showExportDialog = true }
                 )
             }
 

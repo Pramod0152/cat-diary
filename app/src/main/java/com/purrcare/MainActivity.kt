@@ -19,6 +19,7 @@ import com.purrcare.ui.viewmodel.CatProfileViewModel
 import com.purrcare.ui.viewmodel.DailyLogViewModel
 import com.purrcare.ui.viewmodel.HomeViewModel
 import com.purrcare.ui.viewmodel.MedicationViewModel
+import com.purrcare.ui.viewmodel.ReportViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
     private val dailyLogViewModel: DailyLogViewModel by viewModels()
     private val medicationViewModel: MedicationViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
+    private val reportViewModel: ReportViewModel by viewModels()
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -47,7 +49,8 @@ class MainActivity : ComponentActivity() {
                         catProfileViewModel = catProfileViewModel,
                         dailyLogViewModel = dailyLogViewModel,
                         medicationViewModel = medicationViewModel,
-                        homeViewModel = homeViewModel
+                        homeViewModel = homeViewModel,
+                        reportViewModel = reportViewModel
                     )
                 }
             }

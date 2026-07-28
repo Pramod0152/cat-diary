@@ -92,4 +92,12 @@ interface MedicationDao {
 
     @Query("DELETE FROM medication_log WHERE medication_id = :medicationId")
     suspend fun deleteAllLogsForMedication(medicationId: Long)
+
+    @Query("""
+        SELECT ml.* FROM medication_log ml
+        INNER JOIN medication m ON ml.medication_id = m.id
+        WHERE m.cat_id = :catId AND ml.timestamp BETWEEN :startTime AND :endTime
+        ORDER BY ml.timestamp DESC
+    """)
+    suspend fun getLogsForCatInRange(catId: Long, startTime: Long, endTime: Long): List<MedicationLog>
 }
