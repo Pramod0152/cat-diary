@@ -66,13 +66,14 @@ fun MedicationScreen(
     var showAddDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveState) {
-        when (saveState) {
+        val currentState = saveState
+        when (currentState) {
             is MedSaveState.Saved -> {
                 snackbarHostState.showSnackbar("Medication saved")
                 viewModel.resetSaveState()
             }
             is MedSaveState.Error -> {
-                snackbarHostState.showSnackbar((saveState as MedSaveState.Error).message)
+                snackbarHostState.showSnackbar(currentState.message)
                 viewModel.resetSaveState()
             }
             else -> {}

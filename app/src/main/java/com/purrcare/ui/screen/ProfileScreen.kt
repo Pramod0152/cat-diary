@@ -72,14 +72,15 @@ fun ProfileScreen(
     }
 
     LaunchedEffect(saveState) {
-        when (saveState) {
+        val currentSaveState = saveState
+        when (currentSaveState) {
             is ProfileSaveState.Saved -> {
                 snackbarHostState.showSnackbar("Profile saved")
                 viewModel.resetSaveState()
                 onSaved()
             }
             is ProfileSaveState.Error -> {
-                snackbarHostState.showSnackbar("Error: ${saveState.message}")
+                snackbarHostState.showSnackbar("Error: ${currentSaveState.message}")
                 viewModel.resetSaveState()
             }
             else -> {}

@@ -70,14 +70,15 @@ fun DailyLogScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveState) {
-        when (saveState) {
+        val currentState = saveState
+        when (currentState) {
             is com.purrcare.ui.viewmodel.SaveState.Saved -> {
                 snackbarHostState.showSnackbar("Daily log saved")
                 viewModel.resetSaveState()
                 onSaved()
             }
             is com.purrcare.ui.viewmodel.SaveState.Error -> {
-                snackbarHostState.showSnackbar((saveState as com.purrcare.ui.viewmodel.SaveState.Error).message)
+                snackbarHostState.showSnackbar(currentState.message)
                 viewModel.resetSaveState()
             }
             else -> {}
