@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +25,7 @@ import com.purrcare.ui.screen.MedicationScreen
 import com.purrcare.ui.screen.ProfileScreen
 import com.purrcare.ui.viewmodel.CatProfileViewModel
 import com.purrcare.ui.viewmodel.DailyLogViewModel
+import com.purrcare.ui.viewmodel.HomeViewModel
 import com.purrcare.ui.viewmodel.MedicationViewModel
 
 @Composable
@@ -31,12 +33,14 @@ fun PurrCareNavHost(
     catProfileViewModel: CatProfileViewModel,
     dailyLogViewModel: DailyLogViewModel,
     medicationViewModel: MedicationViewModel,
+    homeViewModel: HomeViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val selectedCat by catProfileViewModel.selectedCat.collectAsStateWithLifecycle()
+    val recentLogs by homeViewModel.recentLogs.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -79,8 +83,12 @@ fun PurrCareNavHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
+                LaunchedEffect(selectedCat?.id) {
+                    selectedCat?.id?.let { homeViewModel.initialize(it) }
+                }
                 HomeScreen(
                     catProfile = selectedCat,
+                    recentLogs = recentLogs,
                     onEditProfile = {
                         navController.navigate(Screen.Profile.route) {
                             launchSingleTop = true

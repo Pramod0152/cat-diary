@@ -34,8 +34,8 @@ object AlarmScheduler {
             putExtra(NotificationHelper.EXTRA_MEDICATION_ID, medicationId)
             putExtra(NotificationHelper.EXTRA_CAT_ID, catId)
             putExtra(NotificationHelper.EXTRA_MED_NAME, medName)
+            putExtra("dosage", dosage)
         }
-        intent.putExtra("dosage", dosage)
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -44,11 +44,8 @@ object AlarmScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        val alarmClockInfo = AlarmManager.AlarmClockInfo(calendar.timeInMillis, pendingIntent)
+        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
     }
 
     fun scheduleSnooze(
@@ -69,8 +66,8 @@ object AlarmScheduler {
             putExtra(NotificationHelper.EXTRA_MEDICATION_ID, medicationId)
             putExtra(NotificationHelper.EXTRA_CAT_ID, catId)
             putExtra(NotificationHelper.EXTRA_MED_NAME, medName)
+            putExtra("dosage", dosage)
         }
-        intent.putExtra("dosage", dosage)
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -79,11 +76,8 @@ object AlarmScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        val alarmClockInfo = AlarmManager.AlarmClockInfo(calendar.timeInMillis, pendingIntent)
+        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
     }
 
     fun cancelAlarm(context: Context, medicationId: Long) {
