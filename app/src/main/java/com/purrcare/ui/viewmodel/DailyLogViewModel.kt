@@ -31,9 +31,7 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
         val waterIntake: WaterIntake? = null,
         val litterStoolScore: Int = 4,
         val litterUrination: LitterUrination? = null,
-        val customNotes: String = "",
-        val existingLogId: Long = 0,
-        val isEditing: Boolean = false
+        val customNotes: String = ""
     )
 
     private val _formState = MutableStateFlow(FormState())
@@ -44,7 +42,6 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
 
     fun initialize(catId: Long) {
         _catId = catId
-        loadLogForDate(_formState.value.selectedDate)
     }
 
     fun onDateChanged(dateMillis: Long) {
@@ -56,8 +53,7 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
-        _formState.value = _formState.value.copy(selectedDate = normalized)
-        loadLogForDate(normalized)
+        _formState.value = FormState(selectedDate = normalized)
     }
 
     fun updateWeight(value: String) {
@@ -112,11 +108,9 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _saveState.value = SaveState.Saving
             try {
-                val now = System.currentTimeMillis()
                 val log = DailyLog(
-                    id = state.existingLogId,
                     catId = _catId,
-                    timestamp = if (state.isEditing) state.selectedDate else now,
+                    timestamp = System.currentTimeMillis(),
                     weight = weightVal,
                     appetiteScore = state.appetiteScore,
                     waterIntake = state.waterIntake,
@@ -124,45 +118,11 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
                     litterUrination = state.litterUrination,
                     customNotes = state.customNotes
                 )
-
-                if (state.isEditing) {
-                    dailyLogDao.update(log)
-                } else {
-                    dailyLogDao.insert(log)
-                }
-
+                dailyLogDao.insert(log)
+                _formState.value = FormState(selectedDate = state.selectedDate)
                 _saveState.value = SaveState.Saved
             } catch (e: Exception) {
                 _saveState.value = SaveState.Error(e.message ?: "Failed to save log.")
-            }
-        }
-    }
-
-    private fun loadLogForDate(dateMillis: Long) {
-        viewModelScope.launch {
-            val dayStart = dateMillis
-            val dayEnd = dayStart + 86_399_999L
-            val existingLog = dailyLogDao.getLogForCatOnDay(_catId, dayStart, dayEnd)
-
-            val state = _formState.value
-            if (existingLog != null) {
-                _formState.value = FormState(
-                    selectedDate = dateMillis,
-                    weight = existingLog.weight.toString(),
-                    appetiteScore = existingLog.appetiteScore,
-                    waterIntake = existingLog.waterIntake,
-                    litterStoolScore = existingLog.litterStoolScore,
-                    litterUrination = existingLog.litterUrination,
-                    customNotes = existingLog.customNotes,
-                    existingLogId = existingLog.id,
-                    isEditing = true
-                )
-            } else {
-                _formState.value = _formState.value.copy(
-                    selectedDate = dateMillis,
-                    existingLogId = 0,
-                    isEditing = false
-                )
             }
         }
     }

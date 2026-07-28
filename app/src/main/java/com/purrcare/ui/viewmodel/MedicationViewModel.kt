@@ -1,17 +1,14 @@
 package com.purrcare.ui.viewmodel
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.purrcare.PurrCareApplication
 import com.purrcare.data.entity.Medication
 import com.purrcare.notification.AlarmScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MedicationViewModel(application: Application) : AndroidViewModel(application) {
@@ -57,7 +54,13 @@ class MedicationViewModel(application: Application) : AndroidViewModel(applicati
                 )
                 val id = medicationDao.insert(med)
                 if (isEnabled) {
-                    scheduleAlarm(id, medName, dosage, alarmHour, alarmMinute)
+                    val ok = scheduleAlarm(id, medName, dosage, alarmHour, alarmMinute)
+                    if (!ok) {
+                        _saveState.value = MedSaveState.Error(
+                            "Medication saved but exact alarm permission is required for reminders. Enable it in Settings."
+                        )
+                        return@launch
+                    }
                 }
                 _saveState.value = MedSaveState.Saved
             } catch (e: Exception) {
@@ -71,10 +74,18 @@ class MedicationViewModel(application: Application) : AndroidViewModel(applicati
             val updated = medication.copy(isEnabled = !medication.isEnabled)
             medicationDao.update(updated)
             if (updated.isEnabled) {
-                scheduleAlarm(
+                val ok = scheduleAlarm(
                     updated.id, updated.medName, updated.dosage,
                     updated.alarmHour, updated.alarmMinute
                 )
+                if (!ok) {
+                    // Revert toggle if permission not granted
+                    medicationDao.update(medication)
+                    _saveState.value = MedSaveState.Error(
+                        "Enable exact alarms in Settings to turn on reminders."
+                    )
+                    return@launch
+                }
             } else {
                 AlarmScheduler.cancelAlarm(getApplication(), updated.id)
             }
@@ -98,7 +109,10 @@ class MedicationViewModel(application: Application) : AndroidViewModel(applicati
         dosage: String,
         alarmHour: Int,
         alarmMinute: Int
-    ) {
+    ): Boolean {
+        if (!AlarmScheduler.canSchedule(getApplication())) {
+            return false
+        }
         AlarmScheduler.scheduleAlarm(
             getApplication(),
             medicationId,
@@ -108,6 +122,7 @@ class MedicationViewModel(application: Application) : AndroidViewModel(applicati
             alarmHour,
             alarmMinute
         )
+        return true
     }
 }
 

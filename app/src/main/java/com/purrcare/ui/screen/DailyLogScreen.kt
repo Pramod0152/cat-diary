@@ -113,7 +113,7 @@ fun DailyLogScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (formState.isEditing) "Edit Daily Log" else "Daily Log")
+                    Text("Daily Log")
                 }
             )
         },
@@ -309,7 +309,7 @@ fun DailyLogScreen(
                     )
                 } else {
                     Text(
-                        text = if (formState.isEditing) "Update Log" else "Save Log",
+                        text = "Save Log",
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
                 }
