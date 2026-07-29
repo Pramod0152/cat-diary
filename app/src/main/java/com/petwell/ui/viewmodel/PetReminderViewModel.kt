@@ -32,7 +32,8 @@ class PetReminderViewModel(application: Application) : AndroidViewModel(applicat
 
     fun addReminder(
         title: String, dosage: String, reminderType: ReminderType,
-        frequencyHours: Int, alarmHour: Int, alarmMinute: Int, isEnabled: Boolean
+        frequencyHours: Int, alarmHour: Int, alarmMinute: Int, isEnabled: Boolean,
+        nextReminderDate: Long?
     ) {
         viewModelScope.launch {
             _saveState.value = RemSaveState.Saving
@@ -40,7 +41,8 @@ class PetReminderViewModel(application: Application) : AndroidViewModel(applicat
                 val rem = PetReminder(
                     petId = _petId, title = title, dosage = dosage,
                     reminderType = reminderType, frequencyHours = frequencyHours,
-                    alarmHour = alarmHour, alarmMinute = alarmMinute, isEnabled = isEnabled
+                    alarmHour = alarmHour, alarmMinute = alarmMinute, isEnabled = isEnabled,
+                    nextReminderDate = nextReminderDate
                 )
                 val id = reminderDao.insert(rem)
                 if (isEnabled && !scheduleAlarm(id, title, dosage, alarmHour, alarmMinute)) {

@@ -45,5 +45,8 @@ data class PetReminder(
     val alarmHour: Int = 8,
 
     @ColumnInfo(name = "alarm_minute")
-    val alarmMinute: Int = 0
+    val alarmMinute: Int = 0,
+
+    @ColumnInfo(name = "next_reminder_date")
+    val nextReminderDate: Long? = null
 )

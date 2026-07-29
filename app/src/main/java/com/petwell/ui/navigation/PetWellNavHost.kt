@@ -1,5 +1,10 @@
 package com.petwell.ui.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -104,7 +109,23 @@ fun PetWellNavHost(
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(animationSpec = tween(300)) +
+                    slideInHorizontally(animationSpec = tween(300)) { it / 4 }
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(300)) +
+                    slideOutHorizontally(animationSpec = tween(300)) { -it / 4 }
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(300)) +
+                    slideInHorizontally(animationSpec = tween(300)) { -it / 4 }
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(300)) +
+                    slideOutHorizontally(animationSpec = tween(300)) { it / 4 }
+            }
         ) {
             composable(Screen.Home.route) {
                 LaunchedEffect(selectedPet?.id) {

@@ -12,12 +12,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="PetWell"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PurrCare">
+        android:theme="@style/Theme.PetWell">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.PurrCare">
+            android:theme="@style/Theme.PetWell">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

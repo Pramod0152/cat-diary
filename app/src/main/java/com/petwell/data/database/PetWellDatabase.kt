@@ -21,7 +21,7 @@ import com.petwell.data.entity.PetReminderLog
         PetReminderLog::class,
         JournalEntry::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

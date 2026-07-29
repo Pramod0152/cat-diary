@@ -14,6 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import com.petwell.notification.NotificationHelper
+import com.petwell.ui.theme.PetWellTheme
 import com.petwell.ui.navigation.PetWellNavHost
 import com.petwell.ui.viewmodel.DailyLogViewModel
 import com.petwell.ui.viewmodel.HomeViewModel
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
 
         setContent {
-            MaterialTheme {
+            PetWellTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
