@@ -12,7 +12,14 @@ class PetWellApplication : Application() {
             applicationContext,
             PetWellDatabase::class.java,
             "petwell.db"
-        ).fallbackToDestructiveMigration().build()
+        )
+            .addMigrations(*PetWellDatabase.MIGRATIONS)
+            .apply {
+                if (com.petwell.BuildConfig.DEBUG) {
+                    fallbackToDestructiveMigration()
+                }
+            }
+            .build()
     }
 
     override fun onCreate() {

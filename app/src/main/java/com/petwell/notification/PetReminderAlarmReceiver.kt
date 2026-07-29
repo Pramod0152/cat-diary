@@ -3,8 +3,7 @@ package com.petwell.notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.room.Room
-import com.petwell.data.database.PetWellDatabase
+import com.petwell.PetWellApplication
 import com.petwell.data.entity.PetReminderLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,11 +39,8 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
     }
 
     private fun recordReminderDone(context: Context, reminderId: Long) {
-        val db = Room.databaseBuilder(
-            context.applicationContext,
-            PetWellDatabase::class.java,
-            "petwell.db"
-        ).fallbackToDestructiveMigration().build()
+        val app = context.applicationContext as PetWellApplication
+        val db = app.database
 
         CoroutineScope(Dispatchers.IO).launch {
             val log = PetReminderLog(
@@ -53,16 +49,12 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
                 wasAdministered = true
             )
             db.petReminderDao().insertLog(log)
-            db.close()
         }
     }
 
     private fun rescheduleAllEnabledAlarms(context: Context) {
-        val db = Room.databaseBuilder(
-            context.applicationContext,
-            PetWellDatabase::class.java,
-            "petwell.db"
-        ).fallbackToDestructiveMigration().build()
+        val app = context.applicationContext as PetWellApplication
+        val db = app.database
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -77,7 +69,6 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
                     }
                 }
             } catch (_: Exception) { }
-            db.close()
         }
     }
 }
