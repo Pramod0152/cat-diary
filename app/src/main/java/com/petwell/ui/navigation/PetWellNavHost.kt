@@ -28,6 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.petwell.data.entity.enums.Species
 import com.petwell.ui.screen.DailyLogScreen
 import com.petwell.ui.screen.ExportReportDialog
 import com.petwell.ui.screen.HomeScreen
@@ -172,9 +173,10 @@ fun PetWellNavHost(
 
             composable(Screen.Log.route) {
                 LaunchedEffect(selectedPet?.id) {
-                    selectedPet?.id?.let { dailyLogViewModel.initialize(it) }
+                    selectedPet?.id?.let { dailyLogViewModel.initialize(it, selectedPet!!.species) }
                 }
                 DailyLogScreen(
+                    species = selectedPet?.species ?: Species.CAT,
                     viewModel = dailyLogViewModel,
                     onSaved = {
                         navController.navigate(Screen.Home.route) {

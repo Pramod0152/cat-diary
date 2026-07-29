@@ -1,5 +1,10 @@
 package com.petwell.ui.screen
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -65,6 +71,20 @@ fun ProfileScreen(
     var avatarUri by remember { mutableStateOf(petProfile?.avatarUri ?: "") }
     var species by remember { mutableStateOf(petProfile?.species ?: Species.CAT) }
     var speciesDropdownExpanded by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: SecurityException) { }
+            avatarUri = uri.toString()
+        }
+    }
 
     LaunchedEffect(petProfile) {
         petProfile?.let {
@@ -122,7 +142,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            IconButton(onClick = { /* photo picker stub */ }) {
+            IconButton(onClick = { photoPickerLauncher.launch(PickVisualMediaRequest()) }) {
                 Icon(
                     imageVector = Icons.Default.AddAPhoto,
                     contentDescription = "Add photo",

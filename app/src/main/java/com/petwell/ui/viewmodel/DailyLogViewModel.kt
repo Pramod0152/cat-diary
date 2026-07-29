@@ -41,7 +41,9 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
 
-    fun initialize(petId: Long) { _petId = petId }
+    fun initialize(petId: Long, species: com.petwell.data.entity.enums.Species) {
+        _petId = petId
+    }
 
     fun onDateChanged(dateMillis: Long) {
         val normalized = Calendar.getInstance().apply {
@@ -66,7 +68,6 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
         if (weightVal == null || weightVal <= 0f) { _saveState.value = SaveState.Error("Please enter a valid weight."); return }
         if (state.appetiteScore !in 1..5) { _saveState.value = SaveState.Error("Please select an appetite score."); return }
         if (state.waterIntake == null) { _saveState.value = SaveState.Error("Please select water intake level."); return }
-        if (state.litterUrination == null) { _saveState.value = SaveState.Error("Please select urination level."); return }
 
         viewModelScope.launch {
             _saveState.value = SaveState.Saving

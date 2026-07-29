@@ -45,6 +45,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.petwell.data.entity.enums.LitterUrination
 import com.petwell.data.entity.enums.Mood
+import com.petwell.data.entity.enums.Species
 import com.petwell.data.entity.enums.WaterIntake
 import com.petwell.ui.viewmodel.DailyLogViewModel
 import com.petwell.ui.viewmodel.SaveState
@@ -86,9 +88,18 @@ private val waterChips = listOf(
     WaterIntake.HIGH to "High"
 )
 
+private data class DogStoolChip(val value: Int, val label: String)
+
+private val dogStoolChips = listOf(
+    DogStoolChip(1, "Normal"),
+    DogStoolChip(2, "Soft"),
+    DogStoolChip(3, "Diarrhea")
+)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DailyLogScreen(
+    species: Species,
     viewModel: DailyLogViewModel,
     onSaved: () -> Unit
 ) {
@@ -239,96 +250,35 @@ fun DailyLogScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "Advanced Health Tracking",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        IconButton(
-                            onClick = { showAdvanced = !showAdvanced },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = "Toggle advanced",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    AnimatedVisibility(
-                        visible = showAdvanced,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        Column {
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                "Stool Score",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Slider(
-                                value = formState.litterStoolScore.toFloat(),
-                                onValueChange = { viewModel.updateLitterStoolScore(it.toInt()) },
-                                valueRange = 1f..7f,
-                                steps = 5,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("1 Hard", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("4 Normal", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("7 Liquid", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            Text(
-                                "Score: ${formState.litterStoolScore}",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            Spacer(modifier = Modifier.height(20.dp))
-
-                            Text(
-                                "Urination",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                                LitterUrination.entries.forEachIndexed { index, level ->
-                                    SegmentedButton(
-                                        selected = formState.litterUrination == level,
-                                        onClick = { viewModel.updateLitterUrination(level) },
-                                        shape = SegmentedButtonDefaults.itemShape(index = index, count = LitterUrination.entries.size)
-                                    ) {
-                                        Text(
-                                            text = level.name.lowercase().replaceFirstChar { it.uppercase() },
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+            when (species) {
+                Species.CAT, Species.SMALL_ANIMAL -> {
+                    CatSmallAnimalAdvancedSection(
+                        showAdvanced = showAdvanced,
+                        onToggle = { showAdvanced = !showAdvanced },
+                        stoolScore = formState.litterStoolScore,
+                        onStoolScoreChange = { viewModel.updateLitterStoolScore(it) },
+                        urination = formState.litterUrination,
+                        onUrinationChange = { viewModel.updateLitterUrination(it) }
+                    )
+                }
+                Species.DOG -> {
+                    DogAdvancedSection(
+                        showAdvanced = showAdvanced,
+                        onToggle = { showAdvanced = !showAdvanced },
+                        stoolQuality = formState.litterStoolScore,
+                        onStoolQualityChange = { viewModel.updateLitterStoolScore(it) }
+                    )
+                }
+                Species.BIRD -> {
+                    BirdAdvancedSection(
+                        showAdvanced = showAdvanced,
+                        onToggle = { showAdvanced = !showAdvanced },
+                        droppingsNormal = formState.litterStoolScore == 1,
+                        onDroppingsNormalChange = { viewModel.updateLitterStoolScore(if (it) 1 else 0) }
+                    )
+                }
+                Species.OTHER -> {
+                    OtherSpeciesHint()
                 }
             }
 
@@ -355,6 +305,279 @@ fun DailyLogScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun CatSmallAnimalAdvancedSection(
+    showAdvanced: Boolean,
+    onToggle: () -> Unit,
+    stoolScore: Int,
+    onStoolScoreChange: (Int) -> Unit,
+    urination: LitterUrination?,
+    onUrinationChange: (LitterUrination) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Bathroom Habits",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                IconButton(
+                    onClick = onToggle,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = "Toggle bathroom habits",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = showAdvanced,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        "Stool Score",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Slider(
+                        value = stoolScore.toFloat(),
+                        onValueChange = { onStoolScoreChange(it.toInt()) },
+                        valueRange = 1f..7f,
+                        steps = 5,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("1 Hard", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("4 Normal", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("7 Liquid", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text(
+                        "Score: $stoolScore",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        "Urination",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        LitterUrination.entries.forEachIndexed { index, level ->
+                            SegmentedButton(
+                                selected = urination == level,
+                                onClick = { onUrinationChange(level) },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = LitterUrination.entries.size)
+                            ) {
+                                Text(
+                                    text = level.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DogAdvancedSection(
+    showAdvanced: Boolean,
+    onToggle: () -> Unit,
+    stoolQuality: Int,
+    onStoolQualityChange: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Walk and Bathroom",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                IconButton(
+                    onClick = onToggle,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = "Toggle bathroom habits",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = showAdvanced,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        "Stool Quality",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        dogStoolChips.forEach { chip ->
+                            FilterChip(
+                                selected = stoolQuality == chip.value,
+                                onClick = { onStoolQualityChange(chip.value) },
+                                label = { Text(chip.label) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BirdAdvancedSection(
+    showAdvanced: Boolean,
+    onToggle: () -> Unit,
+    droppingsNormal: Boolean,
+    onDroppingsNormalChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Droppings Check",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                IconButton(
+                    onClick = onToggle,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = "Toggle droppings check",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = showAdvanced,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Droppings Normal?",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Switch(
+                            checked = droppingsNormal,
+                            onCheckedChange = onDroppingsNormalChange
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        if (droppingsNormal) "Droppings appear normal" else "Droppings appear abnormal",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OtherSpeciesHint() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "Species Notes",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Weight, mood, appetite, and water intake are tracked for all species. For detailed notes, use the Journal tab.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

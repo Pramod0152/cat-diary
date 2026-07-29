@@ -10,6 +10,7 @@ import com.petwell.data.entity.DailyLog
 import com.petwell.data.entity.PetProfile
 import com.petwell.data.entity.PetReminder
 import com.petwell.data.entity.PetReminderLog
+import com.petwell.data.entity.enums.Species
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -122,13 +123,13 @@ class VetReportPdfGenerator(private val context: Context) {
             }
 
             y += 20f
-            val dsResult = drawDailyLogSummary(canvas, sortedLogs, dateFormat, dateTimeFormat, y, 0)
+            val dsResult = drawDailyLogSummary(canvas, sortedLogs, dateFormat, dateTimeFormat, y, 0, petProfile.species)
             y = dsResult.first
             logIndex = dsResult.second
             while (logIndex < sortedLogs.size) {
                 val (c, _) = ensurePage()
                 canvas = c
-                val r = drawDailyLogSummary(canvas, sortedLogs, dateFormat, dateTimeFormat, MARGIN, logIndex)
+                val r = drawDailyLogSummary(canvas, sortedLogs, dateFormat, dateTimeFormat, MARGIN, logIndex, petProfile.species)
                 y = r.first
                 logIndex = r.second
                 if (logIndex == 0 && sortedLogs.isNotEmpty()) {
@@ -214,7 +215,8 @@ class VetReportPdfGenerator(private val context: Context) {
         dateFormat: SimpleDateFormat,
         dateTimeFormat: SimpleDateFormat,
         y: Float,
-        startIndex: Int
+        startIndex: Int,
+        species: Species
     ): Pair<Float, Int> {
         var currentY = y
         val bottomLimit = PAGE_HEIGHT - MARGIN - 20f
@@ -234,7 +236,10 @@ class VetReportPdfGenerator(private val context: Context) {
         for (i in startIndex until logs.size) {
             val log = logs[i]
 
-            val entryHeight = 16f + 14f + (if (log.mood != null) 14f else 0f) + 6f
+            val bathroomLine = bathroomLine(species, log)
+            val bathroomHeight = if (bathroomLine != null) 14f else 0f
+            val moodHeight = if (log.mood != null) 14f else 0f
+            val entryHeight = 16f + bathroomHeight + moodHeight + 6f
             if (currentY + entryHeight > bottomLimit) return Pair(currentY, i)
 
             if (i > 0 || startIndex > 0) {
@@ -245,8 +250,10 @@ class VetReportPdfGenerator(private val context: Context) {
             canvas.drawText(dateTimeFormat.format(Date(log.timestamp)), MARGIN, currentY, valuePaint)
             currentY += 16f
 
-            canvas.drawText("Water: ${log.waterIntake.name} | Stool: ${log.litterStoolScore}/7 | Urination: ${log.litterUrination?.name ?: "N/A"}", MARGIN, currentY, valuePaint)
-            currentY += 14f
+            if (bathroomLine != null) {
+                canvas.drawText(bathroomLine, MARGIN, currentY, valuePaint)
+                currentY += 14f
+            }
 
             if (log.mood != null) {
                 canvas.drawText("Mood: ${log.mood.displayName}", MARGIN, currentY, valuePaint)
@@ -256,6 +263,36 @@ class VetReportPdfGenerator(private val context: Context) {
         }
 
         return Pair(currentY, logs.size)
+    }
+
+    private fun bathroomLine(species: Species, log: DailyLog): String? {
+        val stool = log.litterStoolScore
+        return when (species) {
+            Species.CAT, Species.SMALL_ANIMAL -> {
+                val urination = log.litterUrination?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "N/A"
+                "Water: ${log.waterIntake.name} | Stool: $stool/7 | Urination: $urination"
+            }
+            Species.DOG -> {
+                val stoolLabel = when (stool) {
+                    1 -> "Normal"
+                    2 -> "Soft"
+                    3 -> "Diarrhea"
+                    else -> "Not recorded"
+                }
+                "Water: ${log.waterIntake.name} | Stool: $stoolLabel"
+            }
+            Species.BIRD -> {
+                val droppingsLabel = when (stool) {
+                    1 -> "Normal"
+                    0 -> "Abnormal"
+                    else -> "Not recorded"
+                }
+                "Water: ${log.waterIntake.name} | Droppings: $droppingsLabel"
+            }
+            Species.OTHER -> {
+                "Water: ${log.waterIntake.name}"
+            }
+        }
     }
 
     private fun drawReminderTable(
