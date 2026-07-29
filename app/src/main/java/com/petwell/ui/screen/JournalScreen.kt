@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,14 +19,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -204,11 +201,10 @@ fun JournalScreen(
                     ) {
                         JournalCard(
                             entry = entry,
-                            onEdit = {
+                            onClickEdit = {
                                 editingEntry = entry
                                 showAddEditDialog = true
-                            },
-                            onDelete = { viewModel.deleteEntry(entry) }
+                            }
                         )
                     }
                 }
@@ -220,12 +216,12 @@ fun JournalScreen(
 @Composable
 private fun JournalCard(
     entry: JournalEntry,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onClickEdit: () -> Unit
 ) {
     val dateFormat = remember { SimpleDateFormat("MMM d, yyyy 'at' h:mm a", Locale.getDefault()) }
 
     Card(
+        onClick = onClickEdit,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
@@ -245,24 +241,6 @@ private fun JournalCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Row {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                        )
-                    }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -293,8 +271,8 @@ private fun JournalEntryDialog(
     onDismiss: () -> Unit,
     onSave: (title: String, content: String) -> Unit
 ) {
-    var title by remember { mutableStateOf(existingEntry?.title ?: "") }
-    var content by remember { mutableStateOf(existingEntry?.content ?: "") }
+    var title by remember(existingEntry?.id) { mutableStateOf(existingEntry?.title ?: "") }
+    var content by remember(existingEntry?.id) { mutableStateOf(existingEntry?.content ?: "") }
     val isEdit = existingEntry != null
 
     AlertDialog(
