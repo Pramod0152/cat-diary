@@ -26,10 +26,12 @@ import androidx.navigation.compose.rememberNavController
 import com.petwell.ui.screen.DailyLogScreen
 import com.petwell.ui.screen.ExportReportDialog
 import com.petwell.ui.screen.HomeScreen
+import com.petwell.ui.screen.JournalScreen
 import com.petwell.ui.screen.ProfileScreen
 import com.petwell.ui.screen.ReminderScreen
 import com.petwell.ui.viewmodel.DailyLogViewModel
 import com.petwell.ui.viewmodel.HomeViewModel
+import com.petwell.ui.viewmodel.JournalViewModel
 import com.petwell.ui.viewmodel.PetProfileViewModel
 import com.petwell.ui.viewmodel.PetReminderViewModel
 import com.petwell.ui.viewmodel.ReportViewModel
@@ -39,6 +41,7 @@ fun PetWellNavHost(
     petProfileViewModel: PetProfileViewModel,
     dailyLogViewModel: DailyLogViewModel,
     petReminderViewModel: PetReminderViewModel,
+    journalViewModel: JournalViewModel,
     homeViewModel: HomeViewModel,
     reportViewModel: ReportViewModel,
     navController: NavHostController = rememberNavController()
@@ -125,6 +128,11 @@ fun PetWellNavHost(
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToJournal = {
+                        navController.navigate(Screen.Journal.route) {
+                            launchSingleTop = true
+                        }
+                    },
                     onExportReport = { showExportDialog = true }
                 )
             }
@@ -160,6 +168,20 @@ fun PetWellNavHost(
                     selectedPet?.id?.let { petReminderViewModel.initialize(it) }
                 }
                 ReminderScreen(viewModel = petReminderViewModel)
+            }
+
+            composable(Screen.Journal.route) {
+                LaunchedEffect(selectedPet?.id) {
+                    selectedPet?.id?.let { journalViewModel.initialize(it) }
+                }
+                JournalScreen(
+                    viewModel = journalViewModel,
+                    onNavigateBack = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }

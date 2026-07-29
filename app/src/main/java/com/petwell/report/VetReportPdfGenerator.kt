@@ -213,13 +213,9 @@ class VetReportPdfGenerator(private val context: Context) {
             canvas.drawText("Water: ${log.waterIntake.name} | Stool: ${log.litterStoolScore}/7 | Urination: ${log.litterUrination.name}", MARGIN, currentY, valuePaint)
             currentY += 14f
 
-            if (log.customNotes.isNotBlank()) {
-                val wrappedNotes = wrapText(log.customNotes, valuePaint, PAGE_WIDTH - MARGIN * 2)
-                for (line in wrappedNotes) {
-                    if (currentY > PAGE_HEIGHT - MARGIN - 20f) return currentY
-                    canvas.drawText(line, MARGIN + 10f, currentY, valuePaint)
-                    currentY += 14f
-                }
+            if (log.mood != null) {
+                canvas.drawText("Mood: ${log.mood.displayName}", MARGIN, currentY, valuePaint)
+                currentY += 14f
             }
             currentY += 6f
         }

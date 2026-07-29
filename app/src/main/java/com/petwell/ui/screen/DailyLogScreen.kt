@@ -1,7 +1,14 @@
 package com.petwell.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,16 +18,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.petwell.data.entity.enums.LitterUrination
+import com.petwell.data.entity.enums.Mood
 import com.petwell.data.entity.enums.WaterIntake
 import com.petwell.ui.viewmodel.DailyLogViewModel
 import com.petwell.ui.viewmodel.SaveState
@@ -56,7 +70,23 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+private data class AppetiteChip(val score: Int, val label: String)
+
+private val appetiteChips = listOf(
+    AppetiteChip(1, "Poor"),
+    AppetiteChip(2, "Low"),
+    AppetiteChip(3, "Fair"),
+    AppetiteChip(4, "Good"),
+    AppetiteChip(5, "Great")
+)
+
+private val waterChips = listOf(
+    WaterIntake.LOW to "Low",
+    WaterIntake.NORMAL to "Normal",
+    WaterIntake.HIGH to "High"
+)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DailyLogScreen(
     viewModel: DailyLogViewModel,
@@ -66,17 +96,17 @@ fun DailyLogScreen(
     val saveState by viewModel.saveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showAdvanced by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveState) {
-        val currentState = saveState
-        when (currentState) {
+        when (val s = saveState) {
             is SaveState.Saved -> {
                 snackbarHostState.showSnackbar("Daily log saved")
                 viewModel.resetSaveState()
                 onSaved()
             }
             is SaveState.Error -> {
-                snackbarHostState.showSnackbar(currentState.message)
+                snackbarHostState.showSnackbar(s.message)
                 viewModel.resetSaveState()
             }
             else -> {}
@@ -93,25 +123,17 @@ fun DailyLogScreen(
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { viewModel.onDateChanged(it) }
                     showDatePicker = false
-                }) {
-                    Text("OK")
-                }
+                }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
             }
-        ) {
-            DatePicker(state = datePickerState)
-        }
+        ) { DatePicker(state = datePickerState) }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Daily Log") }
-            )
+            TopAppBar(title = { Text("Daily Log") })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
@@ -119,10 +141,10 @@ fun DailyLogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -132,17 +154,15 @@ fun DailyLogScreen(
                 Text(
                     text = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
                         .format(Date(formState.selectedDate)),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
                 IconButton(onClick = { showDatePicker = true }) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Select date"
-                    )
+                    Icon(Icons.Default.CalendarMonth, contentDescription = "Select date")
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             OutlinedTextField(
                 value = formState.weight,
@@ -150,152 +170,178 @@ fun DailyLogScreen(
                 label = { Text("Weight (kg)") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Appetite",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                for (i in 1..5) {
-                    IconButton(
-                        onClick = { viewModel.updateAppetiteScore(i) },
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Appetite $i",
-                            tint = if (i <= formState.appetiteScore)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Water Intake",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                WaterIntake.entries.forEachIndexed { index, intake ->
-                    SegmentedButton(
-                        selected = formState.waterIntake == intake,
-                        onClick = { viewModel.updateWaterIntake(intake) },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = WaterIntake.entries.size
-                        )
-                    ) {
-                        Text(
-                            text = intake.name.lowercase()
-                                .replaceFirstChar { it.uppercase() },
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Litter - Stool Score",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Slider(
-                value = formState.litterStoolScore.toFloat(),
-                onValueChange = { viewModel.updateLitterStoolScore(it.toInt()) },
-                valueRange = 1f..7f,
-                steps = 5,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "1 - Hard",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "4 - Normal",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "7 - Liquid",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Text(
-                text = "Score: ${formState.litterStoolScore}",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Urination",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                LitterUrination.entries.forEachIndexed { index, level ->
-                    SegmentedButton(
-                        selected = formState.litterUrination == level,
-                        onClick = { viewModel.updateLitterUrination(level) },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = LitterUrination.entries.size
-                        )
-                    ) {
-                        Text(
-                            text = level.name.lowercase()
-                                .replaceFirstChar { it.uppercase() },
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            OutlinedTextField(
-                value = formState.customNotes,
-                onValueChange = { viewModel.updateCustomNotes(it) },
-                label = { Text("Notes") },
-                minLines = 3,
-                maxLines = 6,
-                modifier = Modifier.fillMaxWidth()
+                shape = RoundedCornerShape(12.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            SectionLabel("Mood")
+            Spacer(modifier = Modifier.height(10.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Mood.entries.forEach { mood ->
+                    FilterChip(
+                        selected = formState.mood == mood,
+                        onClick = { viewModel.updateMood(mood) },
+                        label = { Text(mood.displayName) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SectionLabel("Appetite")
+            Spacer(modifier = Modifier.height(10.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                appetiteChips.forEach { chip ->
+                    FilterChip(
+                        selected = formState.appetiteScore == chip.score,
+                        onClick = { viewModel.updateAppetiteScore(chip.score) },
+                        label = { Text(chip.label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            SectionLabel("Water Intake")
+            Spacer(modifier = Modifier.height(10.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                waterChips.forEach { (intake, label) ->
+                    FilterChip(
+                        selected = formState.waterIntake == intake,
+                        onClick = { viewModel.updateWaterIntake(intake) },
+                        label = { Text(label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Advanced Health Tracking",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        IconButton(
+                            onClick = { showAdvanced = !showAdvanced },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = "Toggle advanced",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = showAdvanced,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        Column {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                "Stool Score",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Slider(
+                                value = formState.litterStoolScore.toFloat(),
+                                onValueChange = { viewModel.updateLitterStoolScore(it.toInt()) },
+                                valueRange = 1f..7f,
+                                steps = 5,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("1 Hard", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("4 Normal", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("7 Liquid", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Text(
+                                "Score: ${formState.litterStoolScore}",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Text(
+                                "Urination",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                LitterUrination.entries.forEachIndexed { index, level ->
+                                    SegmentedButton(
+                                        selected = formState.litterUrination == level,
+                                        onClick = { viewModel.updateLitterUrination(level) },
+                                        shape = SegmentedButtonDefaults.itemShape(index = index, count = LitterUrination.entries.size)
+                                    ) {
+                                        Text(
+                                            text = level.name.lowercase().replaceFirstChar { it.uppercase() },
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             val isSaving = saveState is SaveState.Saving
             Button(
                 onClick = { viewModel.save() },
                 enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp)
             ) {
                 if (isSaving) {
                     CircularProgressIndicator(
@@ -304,14 +350,20 @@ fun DailyLogScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text(
-                        text = "Save Log",
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
+                    Text("Save Log", modifier = Modifier.padding(vertical = 4.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold
+    )
 }

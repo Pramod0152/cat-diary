@@ -2,6 +2,7 @@ package com.petwell.data.database
 
 import androidx.room.TypeConverter
 import com.petwell.data.entity.enums.LitterUrination
+import com.petwell.data.entity.enums.Mood
 import com.petwell.data.entity.enums.ReminderType
 import com.petwell.data.entity.enums.Species
 import com.petwell.data.entity.enums.WaterIntake
@@ -31,4 +32,10 @@ class Converters {
 
     @TypeConverter
     fun toReminderType(value: String): ReminderType = ReminderType.valueOf(value)
+
+    @TypeConverter
+    fun fromMood(value: Mood?): String? = value?.name
+
+    @TypeConverter
+    fun toMood(value: String?): Mood? = value?.let { Mood.valueOf(it) }
 }

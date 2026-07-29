@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -82,6 +83,7 @@ fun HomeScreen(
     onEditProfile: () -> Unit,
     onNavigateToLog: () -> Unit,
     onNavigateToReminders: () -> Unit,
+    onNavigateToJournal: () -> Unit,
     onExportReport: () -> Unit
 ) {
     var isVisible by remember { mutableStateOf(false) }
@@ -142,6 +144,7 @@ fun HomeScreen(
                     QuickActionsGrid(
                         onLogDay = onNavigateToLog,
                         onReminders = onNavigateToReminders,
+                        onJournal = onNavigateToJournal,
                         onExport = onExportReport
                     )
                 }
@@ -354,12 +357,13 @@ private data class QuickAction(
 private fun QuickActionsGrid(
     onLogDay: () -> Unit,
     onReminders: () -> Unit,
+    onJournal: () -> Unit,
     onExport: () -> Unit
 ) {
     val actions = listOf(
         QuickAction("Log Day", Icons.Filled.CalendarMonth, PastelBlue, Color(0xFF1565C0)),
         QuickAction("Reminders", Icons.Filled.Notifications, PastelGreen, Color(0xFF2E7D32)),
-        QuickAction("Journal", Icons.Filled.Favorite, PastelPink, Color(0xFFC2185B)),
+        QuickAction("Journal", Icons.Filled.Book, PastelPink, Color(0xFFC2185B)),
         QuickAction("Export", Icons.Filled.Share, PastelOrange, Color(0xFFE65100)),
         QuickAction("Vet", Icons.Filled.LocalHospital, PastelPurple, Color(0xFF6A1B9A)),
         QuickAction("Profile", Icons.Filled.Pets, PastelTeal, Color(0xFF00695C))
@@ -392,7 +396,7 @@ private fun QuickActionsGrid(
                                     "Reminders" -> onReminders()
                                     "Export" -> onExport()
                                     "Profile" -> onLogDay()
-                                    "Journal" -> onLogDay()
+                                    "Journal" -> onJournal()
                                     "Vet" -> onLogDay()
                                 }
                             }
@@ -543,9 +547,9 @@ private fun ActivityCard(log: DailyLog, dateFormat: SimpleDateFormat) {
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1
                 )
-                if (log.customNotes.isNotBlank()) {
+                if (log.mood != null) {
                     Text(
-                        log.customNotes,
+                        "Mood: ${log.mood.displayName}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         maxLines = 1

@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.petwell.data.entity.enums.LitterUrination
+import com.petwell.data.entity.enums.Mood
 import com.petwell.data.entity.enums.WaterIntake
 
 @Entity(
@@ -33,6 +34,9 @@ data class DailyLog(
     @ColumnInfo(name = "weight")
     val weight: Float,
 
+    @ColumnInfo(name = "mood")
+    val mood: Mood? = null,
+
     @ColumnInfo(name = "appetite_score")
     val appetiteScore: Int,
 
@@ -40,11 +44,8 @@ data class DailyLog(
     val waterIntake: WaterIntake,
 
     @ColumnInfo(name = "litter_stool_score")
-    val litterStoolScore: Int,
+    val litterStoolScore: Int = 4,
 
     @ColumnInfo(name = "litter_urination")
-    val litterUrination: LitterUrination,
-
-    @ColumnInfo(name = "custom_notes")
-    val customNotes: String = ""
+    val litterUrination: LitterUrination? = null
 )

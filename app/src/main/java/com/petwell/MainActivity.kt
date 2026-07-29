@@ -17,6 +17,7 @@ import com.petwell.notification.NotificationHelper
 import com.petwell.ui.navigation.PetWellNavHost
 import com.petwell.ui.viewmodel.DailyLogViewModel
 import com.petwell.ui.viewmodel.HomeViewModel
+import com.petwell.ui.viewmodel.JournalViewModel
 import com.petwell.ui.viewmodel.PetProfileViewModel
 import com.petwell.ui.viewmodel.PetReminderViewModel
 import com.petwell.ui.viewmodel.ReportViewModel
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
     private val petProfileViewModel: PetProfileViewModel by viewModels()
     private val dailyLogViewModel: DailyLogViewModel by viewModels()
     private val petReminderViewModel: PetReminderViewModel by viewModels()
+    private val journalViewModel: JournalViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
     private val reportViewModel: ReportViewModel by viewModels()
 
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         petProfileViewModel = petProfileViewModel,
                         dailyLogViewModel = dailyLogViewModel,
                         petReminderViewModel = petReminderViewModel,
+                        journalViewModel = journalViewModel,
                         homeViewModel = homeViewModel,
                         reportViewModel = reportViewModel
                     )

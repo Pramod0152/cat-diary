@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.petwell.PetWellApplication
 import com.petwell.data.entity.DailyLog
 import com.petwell.data.entity.enums.LitterUrination
+import com.petwell.data.entity.enums.Mood
 import com.petwell.data.entity.enums.WaterIntake
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,11 +28,11 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis,
         val weight: String = "",
+        val mood: Mood? = null,
         val appetiteScore: Int = 0,
         val waterIntake: WaterIntake? = null,
         val litterStoolScore: Int = 4,
-        val litterUrination: LitterUrination? = null,
-        val customNotes: String = ""
+        val litterUrination: LitterUrination? = null
     )
 
     private val _formState = MutableStateFlow(FormState())
@@ -52,11 +53,11 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateWeight(value: String) { _formState.value = _formState.value.copy(weight = value) }
+    fun updateMood(mood: Mood) { _formState.value = _formState.value.copy(mood = mood) }
     fun updateAppetiteScore(score: Int) { _formState.value = _formState.value.copy(appetiteScore = score) }
     fun updateWaterIntake(intake: WaterIntake) { _formState.value = _formState.value.copy(waterIntake = intake) }
     fun updateLitterStoolScore(score: Int) { _formState.value = _formState.value.copy(litterStoolScore = score) }
     fun updateLitterUrination(urination: LitterUrination) { _formState.value = _formState.value.copy(litterUrination = urination) }
-    fun updateCustomNotes(notes: String) { _formState.value = _formState.value.copy(customNotes = notes) }
     fun resetSaveState() { _saveState.value = SaveState.Idle }
 
     fun save() {
@@ -73,9 +74,12 @@ class DailyLogViewModel(application: Application) : AndroidViewModel(application
                 val log = DailyLog(
                     petId = _petId,
                     timestamp = System.currentTimeMillis(),
-                    weight = weightVal, appetiteScore = state.appetiteScore,
-                    waterIntake = state.waterIntake, litterStoolScore = state.litterStoolScore,
-                    litterUrination = state.litterUrination, customNotes = state.customNotes
+                    weight = weightVal,
+                    mood = state.mood,
+                    appetiteScore = state.appetiteScore,
+                    waterIntake = state.waterIntake,
+                    litterStoolScore = state.litterStoolScore,
+                    litterUrination = state.litterUrination
                 )
                 dailyLogDao.insert(log)
                 _formState.value = FormState(selectedDate = state.selectedDate)
