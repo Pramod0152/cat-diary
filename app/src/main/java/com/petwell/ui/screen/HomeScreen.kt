@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -374,32 +372,35 @@ private fun QuickActionsGrid(
             fontWeight = FontWeight.SemiBold
         )
         Spacer(modifier = Modifier.height(12.dp))
-        LazyVerticalGrid(
-            columns = androidx.compose.foundation.lazy.GridCells.Fixed(3),
-            contentPadding = PaddingValues(0.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            userScrollEnabled = false
-        ) {
-            items(actions.size) { index ->
-                val action = actions[index]
-                QuickActionCard(
-                    label = action.label,
-                    icon = action.icon,
-                    bgColor = action.color,
-                    iconTint = action.iconTint,
-                    onClick = {
-                        when (action.label) {
-                            "Log Day" -> onLogDay()
-                            "Reminders" -> onReminders()
-                            "Export" -> onExport()
-                            "Profile" -> onLogDay()
-                            "Journal" -> onLogDay()
-                            "Vet" -> onLogDay()
-                        }
+        
+        // Chunk actions into rows of 3 to avoid LazyVerticalGrid crash in scrollable Column
+        actions.chunked(3).forEach { rowActions ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                rowActions.forEach { action ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        QuickActionCard(
+                            label = action.label,
+                            icon = action.icon,
+                            bgColor = action.color,
+                            iconTint = action.iconTint,
+                            onClick = {
+                                when (action.label) {
+                                    "Log Day" -> onLogDay()
+                                    "Reminders" -> onReminders()
+                                    "Export" -> onExport()
+                                    "Profile" -> onLogDay()
+                                    "Journal" -> onLogDay()
+                                    "Vet" -> onLogDay()
+                                }
+                            }
+                        )
                     }
-                )
+                }
             }
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
