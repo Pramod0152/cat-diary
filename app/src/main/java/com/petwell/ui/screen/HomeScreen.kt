@@ -146,7 +146,8 @@ fun HomeScreen(
                         onLogDay = onNavigateToLog,
                         onReminders = onNavigateToReminders,
                         onJournal = onNavigateToJournal,
-                        onExport = onExportReport
+                        onExport = onExportReport,
+                        onEditProfile = onEditProfile
                     )
                 }
 
@@ -359,14 +360,17 @@ private fun QuickActionsGrid(
     onLogDay: () -> Unit,
     onReminders: () -> Unit,
     onJournal: () -> Unit,
-    onExport: () -> Unit
+    onExport: () -> Unit,
+    onEditProfile: () -> Unit
 ) {
     val actions = listOf(
         QuickAction("Log Day", Icons.Filled.CalendarMonth, PastelBlue, Color(0xFF1565C0)),
         QuickAction("Reminders", Icons.Filled.Notifications, PastelGreen, Color(0xFF2E7D32)),
         QuickAction("Journal", Icons.Filled.Book, PastelPink, Color(0xFFC2185B)),
         QuickAction("Export", Icons.Filled.Share, PastelOrange, Color(0xFFE65100)),
-        QuickAction("Vet", Icons.Filled.LocalHospital, PastelPurple, Color(0xFF6A1B9A)),
+        // "Vet Report" maps to export since the vet report PDF is the vet-facing feature today.
+        // If a dedicated Vet screen is added later, change this entry's label and wiring.
+        QuickAction("Vet Report", Icons.Filled.LocalHospital, PastelPurple, Color(0xFF6A1B9A)),
         QuickAction("Profile", Icons.Filled.Pets, PastelTeal, Color(0xFF00695C))
     )
 
@@ -396,9 +400,9 @@ private fun QuickActionsGrid(
                                     "Log Day" -> onLogDay()
                                     "Reminders" -> onReminders()
                                     "Export" -> onExport()
-                                    "Profile" -> onLogDay()
+                                    "Profile" -> onEditProfile()
                                     "Journal" -> onJournal()
-                                    "Vet" -> onLogDay()
+                                    "Vet Report" -> onExport()
                                 }
                             }
                         )

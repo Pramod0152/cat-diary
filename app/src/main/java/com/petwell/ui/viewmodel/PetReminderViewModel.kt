@@ -45,7 +45,7 @@ class PetReminderViewModel(application: Application) : AndroidViewModel(applicat
                     nextReminderDate = nextReminderDate
                 )
                 val id = reminderDao.insert(rem)
-                if (isEnabled && !scheduleAlarm(id, title, dosage, alarmHour, alarmMinute)) {
+                if (isEnabled && !scheduleAlarm(id, title, dosage, alarmHour, alarmMinute, nextReminderDate)) {
                     _saveState.value = RemSaveState.Error("Saved but enable exact alarms in Settings for reminders.")
                     return@launch
                 }
@@ -61,7 +61,7 @@ class PetReminderViewModel(application: Application) : AndroidViewModel(applicat
             val updated = reminder.copy(isEnabled = !reminder.isEnabled)
             reminderDao.update(updated)
             if (updated.isEnabled) {
-                if (!scheduleAlarm(updated.id, updated.title, updated.dosage, updated.alarmHour, updated.alarmMinute)) {
+                if (!scheduleAlarm(updated.id, updated.title, updated.dosage, updated.alarmHour, updated.alarmMinute, updated.nextReminderDate)) {
                     reminderDao.update(reminder)
                     _saveState.value = RemSaveState.Error("Enable exact alarms in Settings to turn on reminders.")
                     return@launch
@@ -81,9 +81,9 @@ class PetReminderViewModel(application: Application) : AndroidViewModel(applicat
 
     fun resetSaveState() { _saveState.value = RemSaveState.Idle }
 
-    private fun scheduleAlarm(id: Long, title: String, dosage: String, h: Int, m: Int): Boolean {
+    private fun scheduleAlarm(id: Long, title: String, dosage: String, h: Int, m: Int, nextDate: Long?): Boolean {
         if (!AlarmScheduler.canSchedule(getApplication())) return false
-        AlarmScheduler.scheduleAlarm(getApplication(), id, _petId, title, dosage, h, m)
+        AlarmScheduler.scheduleAlarm(getApplication(), id, _petId, title, dosage, h, m, nextDate)
         return true
     }
 }

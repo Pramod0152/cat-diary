@@ -23,10 +23,12 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
                 NotificationHelper.showReminderNotification(
                     context, reminderId, petId, title, dosage
                 )
+                rescheduleRecurrence(context, reminderId)
             }
             NotificationHelper.ACTION_MARK_DONE -> {
                 NotificationHelper.cancelNotification(context, reminderId)
                 recordReminderDone(context, reminderId)
+                rescheduleRecurrence(context, reminderId)
             }
             NotificationHelper.ACTION_SNOOZE -> {
                 NotificationHelper.cancelNotification(context, reminderId)
@@ -35,6 +37,24 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED -> {
                 rescheduleAllEnabledAlarms(context)
             }
+        }
+    }
+
+    private fun rescheduleRecurrence(context: Context, reminderId: Long) {
+        val app = context.applicationContext as PetWellApplication
+        val db = app.database
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val reminder = db.petReminderDao().getReminderByIdOnce(reminderId) ?: return@launch
+                if (!reminder.isEnabled || reminder.frequencyHours <= 0) return@launch
+
+                val nextTrigger = System.currentTimeMillis() + reminder.frequencyHours * 3_600_000L
+                AlarmScheduler.scheduleAlarmAt(
+                    context, reminder.id, reminder.petId,
+                    reminder.title, reminder.dosage, nextTrigger
+                )
+            } catch (_: Exception) { }
         }
     }
 
@@ -64,7 +84,7 @@ class PetReminderAlarmReceiver : BroadcastReceiver() {
                     enabledReminders.forEach { r ->
                         AlarmScheduler.scheduleAlarm(
                             context, r.id, r.petId, r.title, r.dosage,
-                            r.alarmHour, r.alarmMinute
+                            r.alarmHour, r.alarmMinute, r.nextReminderDate
                         )
                     }
                 }
