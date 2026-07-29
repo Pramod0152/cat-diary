@@ -210,7 +210,7 @@ class VetReportPdfGenerator(private val context: Context) {
             canvas.drawText(dateTimeFormat.format(Date(log.timestamp)), MARGIN, currentY, valuePaint)
             currentY += 16f
 
-            canvas.drawText("Water: ${log.waterIntake.name} | Stool: ${log.litterStoolScore}/7 | Urination: ${log.litterUrination.name}", MARGIN, currentY, valuePaint)
+            canvas.drawText("Water: ${log.waterIntake.name} | Stool: ${log.litterStoolScore}/7 | Urination: ${log.litterUrination?.name ?: "N/A"}", MARGIN, currentY, valuePaint)
             currentY += 14f
 
             if (log.mood != null) {
