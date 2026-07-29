@@ -309,6 +309,7 @@ fun DailyLogScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CatSmallAnimalAdvancedSection(
     showAdvanced: Boolean,
@@ -412,6 +413,7 @@ private fun CatSmallAnimalAdvancedSection(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DogAdvancedSection(
     showAdvanced: Boolean,
